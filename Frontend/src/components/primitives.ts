@@ -35,8 +35,6 @@ export const title = tv({
     color: "text",
   },
 });
-
-
 export const pharagraph = tv({
   base: "text-sm",
   variants: {

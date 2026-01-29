@@ -28,7 +28,7 @@
   /* Black color */
   --color-black: #2C2C2C;
   /* Default color */
-  --color-default: #2C2C2C;
+  --color-default:#2C2C2C ;
 }
 
 @layer base {

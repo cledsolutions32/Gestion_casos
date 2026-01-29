@@ -41,14 +41,17 @@ export const pharagraph = tv({
   base: "text-sm",
   variants: {
     size: {
-      sm: "text-[14px] lg:text-[16px]",
-      md: "text-[16px] lg:text-[18px]",
-      lg: "text-[18px] lg:text-[20px]",
+      sm: "text-[12px] lg:text-[14px]",
+      md: "text-[14px] lg:text-[16px]",
+      lg: "text-[16px] lg:text-[18px]",
     },
     color: {
       gray: "text-gray-light",
       default: "text-text",
       text: "text-text",
+    },
+    underline: {
+      true: "underline",
     },
   },
   defaultVariants: {

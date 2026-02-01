@@ -13,6 +13,9 @@ export const title = tv({
       black: "text-black",
       default: "text-text",
       text: "text-text",
+      brown: "text-brown",
+      white: "text-white",
+      grayDark: "text-gray-dark",
     },
     fontWeight: {
       light: "font-light",
@@ -22,9 +25,14 @@ export const title = tv({
       bold: "font-bold",
     },
     size: {
-      sm: "text-[14px] lg:text-[16px]",
-      md: "text-[16px] lg:text-[18px]",
-      lg: "text-[18px] lg:text-[20px]",
+      sm: "text-[12px] lg:text-[14px]",
+      md: "text-[14px] lg:text-[16px]",
+      lg: "text-[16px] lg:text-[18px]",
+      xl: "text-[20px] lg:text-[22px]",
+      xxl: "text-[18px] lg:text-[20px]",
+    },
+    uppercase: {
+      true: "uppercase",
     },
     fullWidth: {
       true: "w-full block",

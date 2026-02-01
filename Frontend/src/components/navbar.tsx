@@ -1,3 +1,4 @@
+import { useMemo } from "react";
 import { useLocation } from "react-router-dom";
 import { Link } from "@heroui/link";
 import {
@@ -20,15 +21,21 @@ import { Avatar } from "@heroui/avatar";
 import { siteConfig } from "@/config/site";
 import { Logo } from "@/components/icons";
 import { useAuth } from "@/lib/auth-context";
+import { useUsers } from "@/lib/users-context";
+import { title } from "./primitives";
 
 export const Navbar = () => {
   const { user, signOut } = useAuth();
+  const { users } = useUsers();
   const location = useLocation();
   const pathname = location.pathname;
 
-  // Obtener nombre completo del usuario o usar email como fallback
-  const fullName = user?.user_metadata?.full_name ?? null;
-  const displayName = fullName || user?.email?.split("@")[0] || "Usuario";
+  const displayName = useMemo(() => {
+    if (!user?.id) return "Usuario";
+    const profile = users.find((u) => u.id === user.id);
+    const nombre = profile?.nombre?.trim();
+    return nombre || user.email?.split("@")[0] || "Usuario";
+  }, [user?.id, user?.email, users]);
 
   const handleSignOut = () => {
     signOut();
@@ -95,12 +102,12 @@ export const Navbar = () => {
             >
               <Avatar
                 size="sm"
-                name={displayName}
+                name={displayName.charAt(0).toUpperCase() || "U"}
                 showFallback
-                className="flex-shrink-0 text-white"
+                className="flex-shrink-0 text-white "
                 color="default"
               />
-              <span className="text-sm font-medium text-foreground">
+              <span className={title({ size: "md", fontWeight: "semibold", color: "grayDark" })}>
                 {displayName}
               </span>
               <svg

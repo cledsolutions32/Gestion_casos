@@ -29,6 +29,10 @@
   --color-black: #2C2C2C;
   /* Default color */
   --color-default:#2C2C2C ;
+  /* Brown color */
+  --color-brown: #401B01;
+  /* Gray dark color */
+  --color-gray-dark: #757575;
 }
 
 @layer base {

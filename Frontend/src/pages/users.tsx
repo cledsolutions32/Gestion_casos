@@ -1,10 +1,11 @@
 import DefaultLayout from "@/layouts/default";
+import { ListUsers } from "@/components/ListUsers";
 
 export default function UsersPage() {
   return (
     <DefaultLayout>
       <section>
-        <h1>I'm a users page</h1>
+        <ListUsers />
       </section>
     </DefaultLayout>
   );

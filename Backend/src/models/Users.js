@@ -17,7 +17,7 @@ class Users {
      * con los datos de raw_user_meta_data (nombre, rol).
      */
     static async inviteUser(email, nombre, rol) {
-        const frontendUrl = process.env.FRONTEND_URL || 'http://localhost:5173';
+        const frontendUrl = (process.env.FRONTEND_URL || 'http://localhost:5173').replace(/\/$/, '');
         const redirectTo = `${frontendUrl}/reset-password`;
 
         const { data, error } = await supabase.auth.admin.inviteUserByEmail(email, {

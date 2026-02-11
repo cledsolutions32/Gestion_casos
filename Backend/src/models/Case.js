@@ -297,7 +297,7 @@ class Case {
     const { data, error } = await supabase
       .from('casos')
       .select('*')
-      .order('fecha_creacion', { ascending: false });
+      .order('created_at', { ascending: false });
     
     if (error) throw error;
     

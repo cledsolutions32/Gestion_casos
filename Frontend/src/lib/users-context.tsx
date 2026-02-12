@@ -196,12 +196,16 @@ export function UsersProvider({ children }: { children: ReactNode }) {
     [fetchUsers, session?.access_token],
   );
 
-  // Cargar usuarios solo una vez cuando el componente se monta
+  // Cargar usuarios cuando haya sesión (evita 401 por token aún no cargado)
   useEffect(() => {
-    if (!hasLoaded) {
-      fetchUsers();
+    if (!session) {
+      setHasLoaded(false);
+      setIsLoading(false);
+      return;
     }
-  }, [hasLoaded, fetchUsers]);
+    if (hasLoaded) return;
+    fetchUsers();
+  }, [session, hasLoaded, fetchUsers]);
 
   const value = useMemo<UsersContextValue>(
     () => ({

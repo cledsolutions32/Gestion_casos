@@ -105,12 +105,16 @@ export function CasesProvider({ children }: { children: ReactNode }) {
     }
   }, [session?.access_token]);
 
-  // Cargar casos solo una vez cuando el provider se monta
+  // Cargar casos cuando haya sesión (evita 401 por token aún no cargado)
   useEffect(() => {
-    if (!hasLoaded) {
-      fetchCases();
+    if (!session) {
+      setHasLoaded(false);
+      setIsLoading(false);
+      return;
     }
-  }, [hasLoaded, fetchCases]);
+    if (hasLoaded) return;
+    fetchCases();
+  }, [session, hasLoaded, fetchCases]);
 
   const value = useMemo<CasesContextValue>(
     () => ({

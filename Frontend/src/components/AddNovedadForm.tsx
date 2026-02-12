@@ -10,9 +10,9 @@ import {
   ModalFooter,
 } from "@heroui/modal";
 
+import { useAuth } from "@/lib/auth-context";
+import { API_URL, getAuthHeaders } from "@/lib/api";
 import { title } from "@/components/primitives";
-
-const API_URL = import.meta.env.VITE_API_URL || "http://localhost:3000";
 
 const ESTADOS = [
   "Abierto",
@@ -36,6 +36,7 @@ export function AddNovedadForm({
   casoId,
   onSuccess,
 }: AddNovedadFormProps) {
+  const { session } = useAuth();
   const [texto, setTexto] = useState("");
   const [estado, setEstado] = useState<string>("Novedad");
   const [isLoading, setIsLoading] = useState(false);
@@ -73,7 +74,7 @@ export function AddNovedadForm({
         `${API_URL}/cases/${casoId}/novedades`,
         {
           method: "POST",
-          headers: { "Content-Type": "application/json" },
+          headers: getAuthHeaders(session?.access_token),
           body: JSON.stringify({ texto: texto.trim() }),
         },
       );
@@ -94,7 +95,7 @@ export function AddNovedadForm({
         try {
           const estadoResponse = await fetch(`${API_URL}/cases/${casoId}`, {
             method: "PATCH",
-            headers: { "Content-Type": "application/json" },
+            headers: getAuthHeaders(session?.access_token),
             body: JSON.stringify({ estado }),
           });
 

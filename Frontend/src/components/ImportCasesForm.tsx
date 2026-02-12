@@ -11,10 +11,10 @@ import { Spinner } from "@heroui/spinner";
 
 import { AlertCircleIcon, FileIcon } from "./icons";
 
-import { pharagraph, title } from "@/components/primitives";
+import { API_URL, getAuthHeaderOnly } from "@/lib/api";
+import { useAuth } from "@/lib/auth-context";
 import { useCases } from "@/lib/cases-context";
-
-const API_URL = import.meta.env.VITE_API_URL || "http://localhost:3000";
+import { pharagraph, title } from "@/components/primitives";
 
 type ImportCasesFormProps = {
   isOpen: boolean;
@@ -42,6 +42,7 @@ export function ImportCasesForm({
     errorMessages: string[];
   } | null>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
+  const { session } = useAuth();
   const { refreshCases } = useCases();
 
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -91,6 +92,7 @@ export function ImportCasesForm({
 
       const response = await fetch(`${API_URL}/cases/import`, {
         method: "POST",
+        headers: getAuthHeaderOnly(session?.access_token),
         body: formData,
       }).catch((fetchError) => {
         // Error de red o conexión

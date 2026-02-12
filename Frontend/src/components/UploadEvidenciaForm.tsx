@@ -8,9 +8,9 @@ import {
   ModalFooter,
 } from "@heroui/modal";
 
+import { useAuth } from "@/lib/auth-context";
+import { API_URL, getAuthHeaderOnly } from "@/lib/api";
 import { title } from "@/components/primitives";
-
-const API_URL = import.meta.env.VITE_API_URL || "http://localhost:3000";
 
 type UploadEvidenciaFormProps = {
   isOpen: boolean;
@@ -25,6 +25,7 @@ export function UploadEvidenciaForm({
   casoId,
   onSuccess,
 }: UploadEvidenciaFormProps) {
+  const { session } = useAuth();
   const [file, setFile] = useState<File | null>(null);
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -103,6 +104,7 @@ export function UploadEvidenciaForm({
 
       const response = await fetch(`${API_URL}/cases/${casoId}/evidencias`, {
         method: "POST",
+        headers: getAuthHeaderOnly(session?.access_token),
         body: formData,
       });
 

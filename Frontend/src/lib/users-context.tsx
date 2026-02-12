@@ -8,6 +8,9 @@ import {
   type ReactNode,
 } from "react";
 
+import { useAuth } from "@/lib/auth-context";
+import { API_URL, getAuthHeaders } from "@/lib/api";
+
 type User = {
   id: string;
   email: string;
@@ -47,9 +50,8 @@ type UsersContextValue = {
 
 const UsersContext = createContext<UsersContextValue | null>(null);
 
-const API_URL = import.meta.env.VITE_API_URL || "http://localhost:3000";
-
 export function UsersProvider({ children }: { children: ReactNode }) {
+  const { session } = useAuth();
   const [users, setUsers] = useState<User[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -61,7 +63,9 @@ export function UsersProvider({ children }: { children: ReactNode }) {
     try {
       setError(null);
       setIsLoading(true);
-      const response = await fetch(`${API_URL}/users`);
+      const response = await fetch(`${API_URL}/users`, {
+        headers: getAuthHeaders(session?.access_token),
+      });
 
       if (!response.ok) {
         throw new Error(`Error ${response.status}: ${response.statusText}`);
@@ -82,7 +86,7 @@ export function UsersProvider({ children }: { children: ReactNode }) {
     } finally {
       setIsLoading(false);
     }
-  }, []);
+  }, [session?.access_token]);
 
   const refreshUsers = useCallback(async () => {
     await fetchUsers();
@@ -94,7 +98,7 @@ export function UsersProvider({ children }: { children: ReactNode }) {
         setError(null);
         const response = await fetch(`${API_URL}/users`, {
           method: "POST",
-          headers: { "Content-Type": "application/json" },
+          headers: getAuthHeaders(session?.access_token),
           body: JSON.stringify(payload),
         });
 
@@ -119,7 +123,7 @@ export function UsersProvider({ children }: { children: ReactNode }) {
         return { success: false, error: msg };
       }
     },
-    [fetchUsers],
+    [fetchUsers, session?.access_token],
   );
 
   const updateUser = useCallback(
@@ -129,7 +133,7 @@ export function UsersProvider({ children }: { children: ReactNode }) {
         const { id, email, nombre, rol } = payload;
         const response = await fetch(`${API_URL}/users/${id}`, {
           method: "PATCH",
-          headers: { "Content-Type": "application/json" },
+          headers: getAuthHeaders(session?.access_token),
           body: JSON.stringify({ email, nombre, rol }),
         });
 
@@ -155,7 +159,7 @@ export function UsersProvider({ children }: { children: ReactNode }) {
         return { success: false, error: msg };
       }
     },
-    [fetchUsers],
+    [fetchUsers, session?.access_token],
   );
 
   const deleteUser = useCallback(
@@ -164,6 +168,7 @@ export function UsersProvider({ children }: { children: ReactNode }) {
         setError(null);
         const response = await fetch(`${API_URL}/users/${id}`, {
           method: "DELETE",
+          headers: getAuthHeaders(session?.access_token),
         });
 
         const data = await response.json().catch(() => ({}));
@@ -188,7 +193,7 @@ export function UsersProvider({ children }: { children: ReactNode }) {
         return { success: false, error: msg };
       }
     },
-    [fetchUsers],
+    [fetchUsers, session?.access_token],
   );
 
   // Cargar usuarios solo una vez cuando el componente se monta

@@ -1,9 +1,10 @@
 import express from 'express';
+import { requireAdmin } from '../middleware/auth.middleware.js';
 import Users from '../models/Users.js';
 
 const router = express.Router();
 
-//Get all users
+// Get all users (cualquier usuario autenticado)
 router.get('/', async (req, res) => {
     try {
         const users = await Users.getAllUsers();
@@ -13,8 +14,8 @@ router.get('/', async (req, res) => {
     }
 });
 
-// Invitar usuario (envía correo para crear contraseña)
-router.post('/', async (req, res) => {
+// Invitar usuario (solo admin)
+router.post('/', requireAdmin, async (req, res) => {
     try {
         const { email, nombre, rol } = req.body;
 
@@ -39,8 +40,8 @@ router.post('/', async (req, res) => {
     }
 });
 
-// Actualizar usuario (sin enviar correo)
-router.patch('/:id', async (req, res) => {
+// Actualizar usuario (solo admin)
+router.patch('/:id', requireAdmin, async (req, res) => {
     try {
         const { id } = req.params;
         const { email, nombre, rol } = req.body;
@@ -65,8 +66,8 @@ router.patch('/:id', async (req, res) => {
     }
 });
 
-// Eliminar usuario
-router.delete('/:id', async (req, res) => {
+// Eliminar usuario (solo admin)
+router.delete('/:id', requireAdmin, async (req, res) => {
     try {
         const { id } = req.params;
 

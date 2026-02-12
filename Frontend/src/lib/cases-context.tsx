@@ -10,6 +10,9 @@ import {
   type ReactNode,
 } from "react";
 
+import { useAuth } from "@/lib/auth-context";
+import { API_URL, getAuthHeaders } from "@/lib/api";
+
 type CasesContextValue = {
   cases: Case[];
   isLoading: boolean;
@@ -22,6 +25,7 @@ type CasesContextValue = {
 const CasesContext = createContext<CasesContextValue | null>(null);
 
 export function CasesProvider({ children }: { children: ReactNode }) {
+  const { session } = useAuth();
   const [cases, setCases] = useState<Case[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -33,12 +37,9 @@ export function CasesProvider({ children }: { children: ReactNode }) {
     setError(null);
     setIsLoading(true);
     try {
-      const API_URL = import.meta.env.VITE_API_URL || "http://localhost:3000";
       const response = await fetch(`${API_URL}/cases`, {
         method: "GET",
-        headers: {
-          "Content-Type": "application/json",
-        },
+        headers: getAuthHeaders(session?.access_token),
       });
 
       if (!response.ok) {
@@ -61,7 +62,7 @@ export function CasesProvider({ children }: { children: ReactNode }) {
         ) {
           errorMessage =
             "No se pudo conectar con el servidor. Verifica que el backend esté corriendo en " +
-            (import.meta.env.VITE_API_URL || "http://localhost:3000");
+            API_URL;
         } else {
           errorMessage = err.message;
         }
@@ -72,7 +73,7 @@ export function CasesProvider({ children }: { children: ReactNode }) {
       setIsLoading(false);
       setHasLoaded(true);
     }
-  }, []);
+  }, [session?.access_token]);
 
   const refreshCases = useCallback(async () => {
     await fetchCases();
@@ -80,12 +81,9 @@ export function CasesProvider({ children }: { children: ReactNode }) {
 
   const getCaseById = useCallback(async (id: string): Promise<Case | null> => {
     try {
-      const API_URL = import.meta.env.VITE_API_URL || "http://localhost:3000";
       const response = await fetch(`${API_URL}/cases/${id}`, {
         method: "GET",
-        headers: {
-          "Content-Type": "application/json",
-        },
+        headers: getAuthHeaders(session?.access_token),
       });
 
       if (!response.ok) {
@@ -105,7 +103,7 @@ export function CasesProvider({ children }: { children: ReactNode }) {
       console.error("Error al obtener el caso:", err);
       throw err;
     }
-  }, []);
+  }, [session?.access_token]);
 
   // Cargar casos solo una vez cuando el provider se monta
   useEffect(() => {

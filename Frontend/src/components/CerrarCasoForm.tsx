@@ -11,10 +11,10 @@ import {
 } from "@heroui/modal";
 import { today, type DateValue } from "@internationalized/date";
 
+import { useAuth } from "@/lib/auth-context";
+import { API_URL, getAuthHeaders, getAuthHeaderOnly } from "@/lib/api";
 import { title } from "@/components/primitives";
 import { SearchIcon } from "@/components/icons";
-
-const API_URL = import.meta.env.VITE_API_URL || "http://localhost:3000";
 
 type CerrarCasoFormProps = {
   isOpen: boolean;
@@ -29,6 +29,7 @@ export function CerrarCasoForm({
   casoId,
   onSuccess,
 }: CerrarCasoFormProps) {
+  const { session } = useAuth();
   const [fechaCierre, setFechaCierre] = useState<DateValue>(
     today("America/Bogota"),
   );
@@ -110,7 +111,7 @@ export function CerrarCasoForm({
         try {
           await fetch(`${API_URL}/cases/${casoId}/novedades`, {
             method: "POST",
-            headers: { "Content-Type": "application/json" },
+            headers: getAuthHeaders(session?.access_token),
             body: JSON.stringify({ texto: descripcion.trim() }),
           });
         } catch (err) {
@@ -130,6 +131,7 @@ export function CerrarCasoForm({
             `${API_URL}/cases/${casoId}/evidencias`,
             {
               method: "POST",
+              headers: getAuthHeaderOnly(session?.access_token),
               body: formData,
             },
           );
@@ -152,7 +154,7 @@ export function CerrarCasoForm({
       // Nota: Puedes agregar un campo fecha_cierre al modelo si es necesario
       await fetch(`${API_URL}/cases/${casoId}`, {
         method: "PATCH",
-        headers: { "Content-Type": "application/json" },
+        headers: getAuthHeaders(session?.access_token),
         body: JSON.stringify({ estado: "Cerrado" }),
       });
 

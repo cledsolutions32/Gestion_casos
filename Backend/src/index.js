@@ -1,5 +1,6 @@
 import express from 'express';
 import cors from 'cors';
+import { requireAuth } from './middleware/auth.middleware.js';
 import CasesRouter from './routes/CasesRouter.route.js';
 import UsersRouter from './routes/UsersRouter.route.js';
 
@@ -9,8 +10,8 @@ const PORT = process.env.PORT || 3000;
 app.use(cors());
 app.use(express.json());
 
-app.use('/users', UsersRouter);
-app.use('/cases', CasesRouter);
+app.use('/users', requireAuth, UsersRouter);
+app.use('/cases', requireAuth, CasesRouter);
 
 // Not found route
 app.use((req, res) => {

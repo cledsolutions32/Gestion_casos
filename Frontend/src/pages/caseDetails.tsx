@@ -19,6 +19,7 @@ import {
 } from "@heroui/modal";
 
 import { title } from "@/components/primitives";
+import { API_URL, getAuthHeaders } from "@/lib/api";
 import { useCases } from "@/lib/cases-context";
 import { useAuth } from "@/lib/auth-context";
 import { useUsers } from "@/lib/users-context";
@@ -36,8 +37,6 @@ import {
 import { AddNovedadForm } from "@/components/AddNovedadForm";
 import { UploadEvidenciaForm } from "@/components/UploadEvidenciaForm";
 import { CerrarCasoForm } from "@/components/CerrarCasoForm";
-
-const API_URL = import.meta.env.VITE_API_URL || "http://localhost:3000";
 
 /** Formato "DD Mes, YYYY" para las fechas (ej: "10 Enero, 2026") */
 function formatDate(value: string | null | undefined): string {
@@ -159,8 +158,9 @@ export default function CaseDetailsPage() {
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
   const location = useLocation();
-  const { user } = useAuth();
+  const { user, session } = useAuth();
   const { users } = useUsers();
+  const authHeaders = getAuthHeaders(session?.access_token);
   const { getCaseById, refreshCases } = useCases();
   const isAdmin = useMemo(
     () =>
@@ -196,9 +196,7 @@ export default function CaseDetailsPage() {
     try {
       const response = await fetch(`${API_URL}/cases/${casoId}/novedades`, {
         method: "GET",
-        headers: {
-          "Content-Type": "application/json",
-        },
+        headers: authHeaders,
       });
 
       if (!response.ok) {
@@ -221,9 +219,7 @@ export default function CaseDetailsPage() {
     try {
       const response = await fetch(`${API_URL}/cases/${casoId}/evidencias`, {
         method: "GET",
-        headers: {
-          "Content-Type": "application/json",
-        },
+        headers: authHeaders,
       });
 
       if (!response.ok) {
@@ -344,9 +340,7 @@ export default function CaseDetailsPage() {
         `${API_URL}/cases/evidencias/${evidenciaToDelete.id}`,
         {
           method: "DELETE",
-          headers: {
-            "Content-Type": "application/json",
-          },
+          headers: authHeaders,
         },
       );
 
@@ -379,9 +373,7 @@ export default function CaseDetailsPage() {
     try {
       const response = await fetch(`${API_URL}/cases/${id}`, {
         method: "PATCH",
-        headers: {
-          "Content-Type": "application/json",
-        },
+        headers: authHeaders,
         body: JSON.stringify({ estado: nuevoEstado }),
       });
 

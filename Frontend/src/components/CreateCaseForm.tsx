@@ -9,6 +9,8 @@ import { DatePicker } from "@heroui/date-picker";
 import { parseDate } from "@internationalized/date";
 import { Select, SelectSection, SelectItem } from "@heroui/select";
 
+import { useAuth } from "@/lib/auth-context";
+import { API_URL, getAuthHeaders } from "@/lib/api";
 import { title } from "@/components/primitives";
 
 function dateValueToFechaString(value: DateValue | null): string {
@@ -25,8 +27,6 @@ function parseDateString(dateString: string): DateValue | null {
     return null;
   }
 }
-
-const API_URL = import.meta.env.VITE_API_URL || "http://localhost:3000";
 
 type CreateCaseFormProps = {
   onSuccess?: () => void;
@@ -46,6 +46,7 @@ const emptyForm = {
 
 export function CreateCaseForm({ onSuccess, onCancel }: CreateCaseFormProps) {
   const navigate = useNavigate();
+  const { session } = useAuth();
   const [form, setForm] = useState(emptyForm);
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -93,7 +94,7 @@ export function CreateCaseForm({ onSuccess, onCancel }: CreateCaseFormProps) {
     try {
       const response = await fetch(`${API_URL}/cases`, {
         method: "POST",
-        headers: { "Content-Type": "application/json" },
+        headers: getAuthHeaders(session?.access_token),
         body: JSON.stringify(buildPayload()),
       });
       const data = await response.json().catch(() => ({}));

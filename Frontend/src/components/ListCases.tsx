@@ -69,12 +69,21 @@ export const ListCases = () => {
   const location = useLocation();
   const navigate = useNavigate();
   const { user } = useAuth();
-  const { users } = useUsers();
+  const { users, isLoading: usersLoading } = useUsers();
   const { cases, isLoading, error, refreshCases } = useCases();
   const isAdmin = useMemo(
     () =>
       user?.id ? users.find((u) => u.id === user.id)?.rol === "admin" : false,
     [user?.id, users],
+  );
+  const isUsuario = useMemo(
+    () =>
+      user?.id ? users.find((u) => u.id === user.id)?.rol === "usuario" : false,
+    [user?.id, users],
+  );
+  const canCloseCase = useMemo(
+    () => !usersLoading && !isUsuario,
+    [usersLoading, isUsuario],
   );
   const [filterEstado, setFilterEstado] = useState<string>("");
   const [filterMes, setFilterMes] = useState<string>("");
@@ -403,18 +412,20 @@ export const ListCases = () => {
               Detalles
             </span>
           </Link>
-          <Link className="cursor-pointer" onPress={() => setCasoToClose(item)}>
-            <span
-              className={title({
-                size: "sm",
-                fontWeight: "bold",
-                color: "red",
-                uppercase: true,
-              })}
-            >
-              Cerrar
-            </span>
-          </Link>
+          {canCloseCase && item.estado !== "Cerrado" && (
+            <Link className="cursor-pointer" onPress={() => setCasoToClose(item)}>
+              <span
+                className={title({
+                  size: "sm",
+                  fontWeight: "bold",
+                  color: "red",
+                  uppercase: true,
+                })}
+              >
+                Cerrar
+              </span>
+            </Link>
+          )}
         </div>
       ),
     },

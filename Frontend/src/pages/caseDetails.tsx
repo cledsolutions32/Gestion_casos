@@ -370,6 +370,12 @@ export default function CaseDetailsPage() {
   const handleUpdateEstado = async (nuevoEstado: string) => {
     if (!id || !caseData) return;
 
+    // Si es "Cerrado", abrir el modal de inmediato; el formulario hará el PATCH al enviar
+    if (nuevoEstado === "Cerrado") {
+      setIsCerrarCasoModalOpen(true);
+      return;
+    }
+
     try {
       const response = await fetch(`${API_URL}/cases/${id}`, {
         method: "PATCH",
@@ -393,11 +399,6 @@ export default function CaseDetailsPage() {
       }
       // Refrescar la lista de casos en el contexto para que se actualice cuando vuelva a la lista
       await refreshCases();
-
-      // Si el estado es "Cerrado", abrir el modal de cerrar caso
-      if (nuevoEstado === "Cerrado") {
-        setIsCerrarCasoModalOpen(true);
-      }
     } catch (err) {
       alert(
         err instanceof Error ? err.message : "Error al actualizar el estado",

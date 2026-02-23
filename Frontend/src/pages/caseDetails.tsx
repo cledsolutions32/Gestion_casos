@@ -33,10 +33,12 @@ import {
   UploadIcon,
   DownloadIcon,
   CloseIcon,
+  MailIcon,
 } from "@/components/icons";
 import { AddNovedadForm } from "@/components/AddNovedadForm";
 import { UploadEvidenciaForm } from "@/components/UploadEvidenciaForm";
 import { CerrarCasoForm } from "@/components/CerrarCasoForm";
+import { NotificationModal } from "@/components/NotificationModal";
 
 /** Formato "DD Mes, YYYY" para las fechas (ej: "10 Enero, 2026") */
 function formatDate(value: string | null | undefined): string {
@@ -190,6 +192,12 @@ export default function CaseDetailsPage() {
   const [downloadingEvidenciaId, setDownloadingEvidenciaId] = useState<
     string | null
   >(null);
+  const [isSendingNotificarCierre, setIsSendingNotificarCierre] =
+    useState(false);
+  const [notification, setNotification] = useState<{
+    type: "success" | "error";
+    message: string;
+  } | null>(null);
 
   const loadNovedades = async (casoId: string) => {
     setIsLoadingNovedades(true);
@@ -330,6 +338,45 @@ export default function CaseDetailsPage() {
     setEvidenciaToDelete(null);
   };
 
+  const handleNotificarCierre = async () => {
+    if (!id) return;
+    if (evidencias.length === 0) {
+      setNotification({
+        type: "error",
+        message: "No hay evidencias en este caso para enviar.",
+      });
+      return;
+    }
+    setIsSendingNotificarCierre(true);
+    try {
+      const response = await fetch(
+        `${API_URL}/cases/${id}/notificar-cierre`,
+        {
+          method: "POST",
+          headers: authHeaders,
+        },
+      );
+      const data = await response.json().catch(() => ({}));
+      if (!response.ok) {
+        throw new Error(
+          (data?.message as string) || "Error al enviar la notificación",
+        );
+      }
+      setNotification({
+        type: "success",
+        message: data?.message ?? "Correo enviado correctamente.",
+      });
+    } catch (err) {
+      setNotification({
+        type: "error",
+        message:
+          err instanceof Error ? err.message : "Error al notificar cierre",
+      });
+    } finally {
+      setIsSendingNotificarCierre(false);
+    }
+  };
+
   const handleConfirmDelete = async () => {
     if (!evidenciaToDelete) return;
 
@@ -428,7 +475,6 @@ export default function CaseDetailsPage() {
   return (
     <DefaultLayout>
       <div className="w-full">
-        {/* Botón de regreso */}
         <div className="mb-6 flex items-center justify-between gap-2">
           <div className="flex items-center gap-2">
             <Button
@@ -880,25 +926,48 @@ export default function CaseDetailsPage() {
                   >
                     Evidencias
                   </span>
-                  {caseData.estado === "Cerrado" && isAdmin && (
-                    <Button
-                      color="default"
-                      size="sm"
-                      startContent={<UploadIcon />}
-                      variant="solid"
-                      onPress={() => setIsUploadEvidenciaModalOpen(true)}
-                    >
-                      <span
-                        className={title({
-                          size: "sm",
-                          fontWeight: "semibold",
-                          color: "white",
-                        })}
+                  <div className="flex flex-wrap items-center gap-2">
+                    {caseData.estado === "Cerrado" && isAdmin && (
+                      <Button
+                        color="default"
+                        size="sm"
+                        startContent={<UploadIcon />}
+                        variant="solid"
+                        onPress={() => setIsUploadEvidenciaModalOpen(true)}
                       >
-                        Subir Evidencia
-                      </span>
-                    </Button>
-                  )}
+                        <span
+                          className={title({
+                            size: "sm",
+                            fontWeight: "semibold",
+                            color: "white",
+                          })}
+                        >
+                          Subir Evidencia
+                        </span>
+                      </Button>
+                    )}
+                    {evidencias.length > 0 && isAdmin && (
+                      <Button
+                        color="primary"
+                        size="sm"
+                        startContent={<MailIcon />}
+                        variant="solid"
+                        isDisabled={isSendingNotificarCierre}
+                        isLoading={isSendingNotificarCierre}
+                        onPress={handleNotificarCierre}
+                      >
+                        <span
+                          className={title({
+                            size: "sm",
+                            fontWeight: "semibold",
+                            color: "white",
+                          })}
+                        >
+                          Notificar cierre
+                        </span>
+                      </Button>
+                    )}
+                  </div>
                 </div>
 
                 {isLoadingEvidencias ? (
@@ -1244,6 +1313,14 @@ export default function CaseDetailsPage() {
           </div>
         ) : null}
       </div>
+      {notification && (
+        <NotificationModal
+          isOpen={!!notification}
+          type={notification.type}
+          message={notification.message}
+          onClose={() => setNotification(null)}
+        />
+      )}
     </DefaultLayout>
   );
 }

@@ -5,7 +5,8 @@ import Evidencia from '../models/Evidencia.js';
 import upload from '../config/multer.js';
 import uploadEvidencias from '../config/multer-evidencias.js';
 import ExcelService from '../services/Excel.service.js';
-import { uploadFileToStorage, getSignedUrl } from '../services/Storage.service.js';
+import { uploadFileToStorage, getSignedUrl, downloadFileFromStorage } from '../services/Storage.service.js';
+import { sendNotificarCierreEmail } from '../services/Email.service.js';
 
 const router = express.Router();
 
@@ -194,6 +195,56 @@ router.get('/:id/evidencias', async (req, res) => {
     res.status(200).json(evidenciasConUrl);
   } catch (error) {
     const msg = error?.message || 'Error al obtener las evidencias';
+    res.status(500).json({ message: msg });
+  }
+});
+
+// Notificar cierre: envía por correo las evidencias del caso a dsilverarivera@gmail.com
+router.post('/:id/notificar-cierre', async (req, res) => {
+  try {
+    const { id } = req.params;
+    if (!id) {
+      return res.status(400).json({
+        message: 'El ID del caso es obligatorio',
+      });
+    }
+
+    const evidencias = await Evidencia.getEvidenciasByCasoId(id);
+    if (!evidencias || evidencias.length === 0) {
+      return res.status(400).json({
+        message: 'No hay evidencias cargadas en este caso para enviar',
+      });
+    }
+
+    const attachments = [];
+    for (const ev of evidencias) {
+      try {
+        const content = await downloadFileFromStorage(ev.ruta_storage);
+        attachments.push({ nombre_archivo: ev.nombre_archivo, content });
+      } catch (err) {
+        console.error(`Error al descargar evidencia ${ev.id}:`, err.message);
+        // Continuar con las demás evidencias
+      }
+    }
+
+    if (attachments.length === 0) {
+      return res.status(500).json({
+        message: 'No se pudo descargar ninguna evidencia para adjuntar',
+      });
+    }
+
+    const result = await sendNotificarCierreEmail(attachments);
+    if (!result.success) {
+      return res.status(500).json({
+        message: result.error || 'Error al enviar el correo',
+      });
+    }
+
+    res.status(200).json({
+      message: result.message || 'Correo enviado correctamente con las evidencias adjuntas',
+    });
+  } catch (error) {
+    const msg = error?.message || 'Error al notificar cierre';
     res.status(500).json({ message: msg });
   }
 });

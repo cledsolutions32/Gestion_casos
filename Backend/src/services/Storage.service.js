@@ -68,3 +68,26 @@ export async function getSignedUrl(filePath, expiresIn = 3600) {
 
   return data?.signedUrl || '';
 }
+
+/**
+ * Descarga un archivo de Supabase Storage y lo devuelve como Buffer
+ * @param {string} filePath - Ruta del archivo en Storage
+ * @returns {Promise<Buffer>}
+ */
+export async function downloadFileFromStorage(filePath) {
+  const { data, error } = await supabase.storage
+    .from('evidencias')
+    .download(filePath);
+
+  if (error) {
+    throw new Error(`Error al descargar archivo: ${error.message}`);
+  }
+
+  if (!data) {
+    throw new Error('No se obtuvo contenido del archivo');
+  }
+
+  // En Node.js, data puede ser Blob; convertir a Buffer
+  const arrayBuffer = await data.arrayBuffer();
+  return Buffer.from(arrayBuffer);
+}

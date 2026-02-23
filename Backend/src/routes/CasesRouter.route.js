@@ -6,7 +6,7 @@ import upload from '../config/multer.js';
 import uploadEvidencias from '../config/multer-evidencias.js';
 import ExcelService from '../services/Excel.service.js';
 import { uploadFileToStorage, getSignedUrl, downloadFileFromStorage } from '../services/Storage.service.js';
-import { sendNotificarCierreEmail } from '../services/Email.service.js';
+import { sendCierreNotification } from '../services/Email.service.js';
 
 const router = express.Router();
 
@@ -233,7 +233,16 @@ router.post('/:id/notificar-cierre', async (req, res) => {
       });
     }
 
-    const result = await sendNotificarCierreEmail(attachments);
+    const caso = await Case.getCaseById(id);
+    if (!caso) {
+      return res.status(404).json({ message: 'Caso no encontrado' });
+    }
+
+    const result = await sendCierreNotification({
+      to: 'dsilverarivera@gmail.com',
+      caseData: caso,
+      attachments: attachments.map((a) => ({ filename: a.nombre_archivo, content: a.content })),
+    });
     if (!result.success) {
       return res.status(500).json({
         message: result.error || 'Error al enviar el correo',

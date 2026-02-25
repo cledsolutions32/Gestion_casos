@@ -199,7 +199,7 @@ router.get('/:id/evidencias', async (req, res) => {
   }
 });
 
-// Notificar cierre: envía por correo las evidencias del caso a dsilverarivera@gmail.com
+// Notificar cierre: envía por correo las evidencias del caso
 router.post('/:id/notificar-cierre', async (req, res) => {
   try {
     const { id } = req.params;
@@ -238,8 +238,14 @@ router.post('/:id/notificar-cierre', async (req, res) => {
       return res.status(404).json({ message: 'Caso no encontrado' });
     }
 
+    const toEmail = process.env.EMAIL_NOTIFICACION_CIERRE?.trim();
+    if (!toEmail) {
+      return res.status(500).json({
+        message: 'EMAIL_NOTIFICACION_CIERRE no está configurada en el servidor',
+      });
+    }
     const result = await sendCierreNotification({
-      to: 'dsilverarivera@gmail.com',
+      to: toEmail,
       caseData: caso,
       attachments: attachments.map((a) => ({ filename: a.nombre_archivo, content: a.content })),
     });

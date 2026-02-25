@@ -2,8 +2,9 @@ import { Resend } from 'resend';
 
 const resend = new Resend(process.env.RESEND_API_KEY);
 
-const FROM_EMAIL = process.env.EMAIL_FROM || 'onboarding@resend.dev';
-const FROM_NAME = process.env.EMAIL_FROM_NAME || 'Sistema de Casos';
+// Remitente: usar correo de dominio verificado en Resend (ej. noreply@cledsoluciones.com)
+const FROM_EMAIL = process.env.EMAIL_FROM || 'noreply@cledsoluciones.com';
+const FROM_NAME = process.env.EMAIL_FROM_NAME || 'Cled Soluciones';
 
 /**
  * Envía un correo de notificación de cierre de caso con las evidencias adjuntas
@@ -21,24 +22,13 @@ export async function sendCierreNotification({ to, caseData, attachments = [] })
   const aviso = caseData.aviso || caseData.id || 'N/A';
   const subject = `Notificación de cierre - Caso #${aviso}`;
 
-  const evidenciasList =
-    attachments.length > 0
-      ? attachments.map((a) => `• ${a.filename}`).join('\n')
-      : 'No hay evidencias adjuntas.';
-
   const html = `
-    <h2>Notificación de cierre de caso</h2>
-    <p>Se notifica el cierre del siguiente caso:</p>
-    <ul>
-      <li><strong>Aviso:</strong> ${aviso}</li>
-      <li><strong>Descripción:</strong> ${caseData.texto_breve || '—'}</li>
-      <li><strong>Estado:</strong> ${caseData.estado || '—'}</li>
-      <li><strong>Zona:</strong> ${caseData.zona || '—'}</li>
-      <li><strong>Tipología:</strong> ${caseData.tipologia || '—'}</li>
-    </ul>
-    <h3>Evidencias adjuntas (${attachments.length})</h3>
-    <pre>${evidenciasList}</pre>
-    <p><em>Este correo fue generado automáticamente por el sistema.</em></p>
+    <p><strong>Cordial saludo,</strong></p>
+    <p>Adjunto a este correo el acta correspondiente a la actividad finalizada para su revisión y archivo.</p>
+    <p>Quedo atenta a cualquier comentario.</p>
+    <p>Cordialmente,</p>
+    <p><strong>Lina Marcela Muñoz<br/>
+    Gerente Comercial</strong></p>
   `;
 
   try {

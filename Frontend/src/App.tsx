@@ -1,17 +1,21 @@
+import { lazy, Suspense } from "react";
 import { Navigate, Route, Routes } from "react-router-dom";
+import { Spinner } from "@heroui/spinner";
 
 import { AdminRoute } from "@/components/AdminRoute";
 import { ProtectedRoute } from "@/components/ProtectedRoute";
-import CasesPage from "@/pages/cases";
-import CreateCasePage from "@/pages/createCase";
-import CaseDetailsPage from "@/pages/caseDetails";
-import LoginPage from "@/pages/login";
-import RecoveryPasswordPage from "@/pages/recoveryPassword";
-import ResetPasswordPage from "@/pages/resetPassword";
-import UsersPage from "@/pages/users";
+
+const LoginPage = lazy(() => import("@/pages/login"));
+const CasesPage = lazy(() => import("@/pages/cases"));
+const CreateCasePage = lazy(() => import("@/pages/createCase"));
+const CaseDetailsPage = lazy(() => import("@/pages/caseDetails"));
+const RecoveryPasswordPage = lazy(() => import("@/pages/recoveryPassword"));
+const ResetPasswordPage = lazy(() => import("@/pages/resetPassword"));
+const UsersPage = lazy(() => import("@/pages/users"));
 
 function App() {
   return (
+    <Suspense fallback={<div className="flex min-h-screen items-center justify-center bg-[#F4F4F5]"><Spinner /></div>}>
     <Routes>
       <Route element={<Navigate replace to="/cases" />} path="/" />
       <Route element={<LoginPage />} path="/login" />
@@ -50,6 +54,7 @@ function App() {
         path="/users"
       />
     </Routes>
+    </Suspense>
   );
 }
 

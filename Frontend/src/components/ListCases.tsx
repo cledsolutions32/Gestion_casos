@@ -88,6 +88,7 @@ export const ListCases = () => {
   const [filterEstado, setFilterEstado] = useState<string>("");
   const [filterMes, setFilterMes] = useState<string>("");
   const [filterPrioridad, setFilterPrioridad] = useState<string>("");
+  const [filterZona, setFilterZona] = useState<string>("");
   const [isImportModalOpen, setIsImportModalOpen] = useState(false);
   const [notification, setNotification] = useState<{
     type: "success" | "error";
@@ -127,6 +128,16 @@ export const ListCases = () => {
     });
 
     return Array.from(prioridades).sort();
+  }, [cases]);
+
+  const zonasUnicas = useMemo(() => {
+    const zonas = new Set<string>();
+
+    cases.forEach((c) => {
+      if (c.zona && String(c.zona).trim()) zonas.add(String(c.zona).trim());
+    });
+
+    return Array.from(zonas).sort();
   }, [cases]);
 
   // Generar lista de meses disponibles
@@ -184,6 +195,10 @@ export const ListCases = () => {
     return filterPrioridad || "Todas";
   }, [filterPrioridad]);
 
+  const zonaDisplayText = useMemo(() => {
+    return filterZona || "Todas";
+  }, [filterZona]);
+
   // Aplicar filtros
   const casosFiltrados = useMemo(() => {
     return cases.filter((c) => {
@@ -192,6 +207,9 @@ export const ListCases = () => {
 
       // Filtro por prioridad
       if (filterPrioridad && c.prioridad !== filterPrioridad) return false;
+
+      // Filtro por zona
+      if (filterZona && String(c.zona ?? "").trim() !== filterZona) return false;
 
       // Filtro por mes
       if (filterMes && c.fecha_creacion) {
@@ -213,7 +231,7 @@ export const ListCases = () => {
 
       return true;
     });
-  }, [cases, filterEstado, filterMes, filterPrioridad]);
+  }, [cases, filterEstado, filterMes, filterPrioridad, filterZona]);
 
   const columns: DataTableColumn<Case>[] = [
     {
@@ -682,6 +700,58 @@ export const ListCases = () => {
                       textValue={prioridad}
                     >
                       {prioridad}
+                    </DropdownItem>
+                  )) as any
+                }
+              </DropdownMenu>
+            </Dropdown>
+            <Dropdown>
+              <DropdownTrigger>
+                <Button
+                  className={`${filterZona ? "bg-primary" : "bg-gray"} rounded-full px-4 py-2 h-auto min-w-fit border-0 shadow-none ${filterZona ? "hover:bg-primary" : "hover:bg-gray-light"}`}
+                  radius="full"
+                  variant="flat"
+                >
+                  <span
+                    className={title({
+                      size: "sm",
+                      fontWeight: "medium",
+                      color: "brown",
+                    })}
+                  >
+                    Zona: {zonaDisplayText}
+                  </span>
+                  <DropdownIcon />
+                </Button>
+              </DropdownTrigger>
+              <DropdownMenu
+                aria-label="Filtro de zona"
+                classNames={{
+                  base: "[&_li[data-hover=true]]:!bg-default [&_li[data-hover=true]]:!text-white [&_li:not([data-hover=true])]:!bg-transparent [&_li:not([data-hover=true])]:!text-inherit",
+                }}
+                selectedKeys={filterZona ? [filterZona] : []}
+                selectionMode="single"
+                onSelectionChange={(keys) => {
+                  const selected = Array.from(keys)[0] as string;
+
+                  setFilterZona(selected || "");
+                }}
+              >
+                <DropdownItem
+                  key=""
+                  className="hover:!bg-default hover:!text-white data-[selected=true]:!bg-transparent data-[selected=true]:!text-inherit data-[focus=true]:!bg-transparent data-[focus=true]:!text-inherit"
+                  textValue="Todas"
+                >
+                  Todas
+                </DropdownItem>
+                {
+                  zonasUnicas.map((zona) => (
+                    <DropdownItem
+                      key={zona}
+                      className="hover:!bg-default hover:!text-white data-[selected=true]:!bg-transparent data-[selected=true]:!text-inherit data-[focus=true]:!bg-transparent data-[focus=true]:!text-inherit"
+                      textValue={zona}
+                    >
+                      {zona}
                     </DropdownItem>
                   )) as any
                 }

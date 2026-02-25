@@ -244,6 +244,23 @@ class Case {
   }
 
   /**
+   * Normaliza un valor de fecha a YYYY-MM-DD para comparación (evita falsos cambios por formato ISO vs date-only).
+   */
+  static _normalizeDateForCompare(value) {
+    if (value == null || value === '') return '';
+    const str = String(value).trim();
+    if (!str) return '';
+    const match = str.match(/^\d{4}-\d{2}-\d{2}/);
+    if (match) return match[0];
+    const d = new Date(str);
+    if (Number.isNaN(d.getTime())) return str;
+    const y = d.getFullYear();
+    const m = String(d.getMonth() + 1).padStart(2, '0');
+    const day = String(d.getDate()).padStart(2, '0');
+    return `${y}-${m}-${day}`;
+  }
+
+  /**
    * Compara dos casos y retorna los campos que han cambiado
    * @param {object} existingCase - Caso existente en la BD
    * @param {object} newCaseData - Nuevos datos del caso
@@ -266,19 +283,17 @@ class Case {
       const existingValue = existingCase[field];
       const newValue = newCaseData[field];
       
-      // Normalizar valores para comparación
       const normalizedExisting = existingValue != null ? String(existingValue).trim() : '';
       const normalizedNew = newValue != null ? String(newValue).trim() : '';
       
-      // Comparar fechas (normalizar formato)
-      if (field.includes('fecha') || field === 'fecha_creacion' || field === 'fin_averia_tiempo_respuesta') {
-        const existingDate = normalizedExisting.split('T')[0]; // Solo la parte de fecha
-        const newDate = normalizedNew.split('T')[0];
+      const isDateField = field === 'fecha_creacion' || field === 'fin_averia_tiempo_respuesta';
+      if (isDateField) {
+        const existingDate = Case._normalizeDateForCompare(existingValue);
+        const newDate = Case._normalizeDateForCompare(newValue);
         if (existingDate !== newDate && newDate) {
           changes[field] = { old: existingValue, new: newValue };
         }
       } else {
-        // Comparar otros campos
         if (normalizedExisting !== normalizedNew && normalizedNew) {
           changes[field] = { old: existingValue, new: newValue };
         }

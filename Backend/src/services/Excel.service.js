@@ -309,12 +309,17 @@ async function importCasesFromExcel(buffer) {
           const existingCase = await Case.getCaseByAviso(caseData.aviso);
           
           if (existingCase) {
-            // Comparar casos para detectar cambios
+            // Comparar casos para detectar cambios (solo actualizar si hay cambios en datos, no solo en estado)
             const changes = Case.compareCases(existingCase, caseData);
+            const changesWithoutEstado = { ...changes };
+            delete changesWithoutEstado.estado;
+            const hasRealChanges = Object.keys(changesWithoutEstado).length > 0;
             
-            if (Object.keys(changes).length > 0) {
-              // Hay cambios, actualizar el caso
-              const { data: updatedData } = await Case.updateCase(caseData.aviso, caseData);
+            if (hasRealChanges) {
+              // Hay cambios en datos, actualizar el caso (sin modificar estado para no pisar cambios hechos en la plataforma)
+              const updatePayload = { ...caseData };
+              delete updatePayload.estado;
+              const { data: updatedData } = await Case.updateCase(caseData.aviso, updatePayload);
               results.success.push({
                 aviso: caseData.aviso,
                 data: updatedData,
